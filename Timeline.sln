@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.320.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline", "Timeline.Game\Timeline.csproj", "{6D37010F-00DC-C300-966D-6870D88A775D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Game", "Timeline.Game\Timeline.Game.csproj", "{6D37010F-00DC-C300-966D-6870D88A775D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Desktop", "Timeline.Desktop\Timeline.Desktop.csproj", "{19EF0F18-51F1-4BB7-B630-02687F8D7690}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Timeline", "Timeline.Timeline\Timeline.Timeline.csproj", "{79552CDA-8B44-4045-87E7-7B54781424E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,18 @@ Global
 		{19EF0F18-51F1-4BB7-B630-02687F8D7690}.Release|x64.Build.0 = Release|Any CPU
 		{19EF0F18-51F1-4BB7-B630-02687F8D7690}.Release|x86.ActiveCfg = Release|Any CPU
 		{19EF0F18-51F1-4BB7-B630-02687F8D7690}.Release|x86.Build.0 = Release|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Debug|x64.Build.0 = Debug|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Debug|x86.Build.0 = Debug|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Release|x64.ActiveCfg = Release|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Release|x64.Build.0 = Release|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Release|x86.ActiveCfg = Release|Any CPU
+		{79552CDA-8B44-4045-87E7-7B54781424E6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

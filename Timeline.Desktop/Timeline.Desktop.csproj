@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Timeline.Game/Timeline.csproj" />
+    <ProjectReference Include="../Timeline.Game/Timeline.Game.csproj" />
   </ItemGroup>
 
 </Project>

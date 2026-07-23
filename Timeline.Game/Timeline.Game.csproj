@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Version>2026.100.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Line.Framework" Version="2026.103.3" />
+  </ItemGroup>
+
+</Project>
