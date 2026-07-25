@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Line.Framework" Version="2026.103.3" />
+    <EmbeddedResource Include="Assets\**\*" />
   </ItemGroup>
 
 </Project>
