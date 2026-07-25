@@ -20,7 +20,10 @@ public partial class Intro : Screen
         switch (TimelineGame.Running.GameUserInterfaceCfg.IntroScreen)
         {
             case IntroScreens.Origin:
-                OriginScreen();
+                await OriginScreen();
+                break;
+            default:
+                await OriginScreen();
                 break;
         }
     }
