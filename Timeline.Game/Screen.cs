@@ -26,8 +26,10 @@ public abstract class Screen : UIWidget, IDescription
                     break;
             }
         }
-        FocusScreen?.Dispose();
+        FocusScreen?.Parent = null;
         FocusScreen = scr;
+        scr.Parent = TimelineGame.Running?.ScreenSurface;
+        scr.Size = new(new(), new(1, 1));
         if (scr == null)
         {
             if (Loadqueue[0] == scr)
@@ -63,8 +65,10 @@ public abstract class Screen : UIWidget, IDescription
                     break;
             }
         }
-        FocusScreen?.Dispose();
+        FocusScreen?.Parent = null;
         FocusScreen = scr;
+        scr.Parent = TimelineGame.Running?.ScreenSurface;
+        scr.Size = new(new(), new(1, 1));
         if (scr == null)
         {
             if (Loadqueue[0] == scr)

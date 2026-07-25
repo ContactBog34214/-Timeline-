@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Text.Json;
 using Line.Framework;
 using Line.Framework.Graphics;
+using Line.Framework.Resource.Graphic;
+using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
 
@@ -70,10 +72,12 @@ public partial class TimelineGame
             RequestQuit = () =>
             {
                 if (Screen.Screen.FocusScreen?.AllowExit ?? true)
-                    Task.Run(()=>@Host.Dispose());
+                    Task.Run(() => @Host.Dispose());
             },
         };
         Log.Debug($"[{GetType().Name}] Window created");
+
+        var fontTask=LoadAllFont();
 
         ScreenSurface = new UIBox()
         {
@@ -81,14 +85,70 @@ public partial class TimelineGame
             color = new(0, 0, 0, 0),
             Size = new(new(), new(1, 1)),
             Z = 1,
+            TouchMode = TouchModes.All,
+            Parent = @Host.Root,
         };
+        Overlay = new UIBox()
+        {
+            Name = "Overlay",
+            color = new(0, 0, 0, 0),
+            Size = new(new(), new(1, 1)),
+            Z = 2,
+            TouchMode = TouchModes.Children,
+            Parent = @Host.Root,
+        };
+        Background = new UIBox()
+        {
+            Name = "Background",
+            color = new(0, 0, 0, 1),
+            Size = new(new(), new(1, 1)),
+            Z = 0,
+            TouchMode = TouchModes.None,
+            Parent = @Host.Root,
+        };
+
+        fontTask?.Wait();
 
         Log.Debug("Loading intro screen");
         Screen.Intro intro = new();
-        Screen.Screen.LoadScreenASync(intro);
+        Screen.Screen.LoadScreen(intro);
+    }
+
+    async Task LoadAllFont()
+    {
+        var rm = Host.Resource;
+        var assembly = Assembly.GetExecutingAssembly();
+
+        var names = assembly.GetManifestResourceNames();
+        foreach (var name in names)
+        {
+            var sp = name.Split('.');
+            if (
+                sp.Length > 5
+                && sp[0] == "Timeline"
+                && sp[1] == "Game"
+                && sp[2] == "Assets"
+                && sp[3] == "Fonts"
+                && sp.Last() == "ttf"
+            )
+            {
+                try
+                {
+                    rm.Create("Font", name, assembly.GetManifestResourceStream(name));
+                    ((Font)rm.GetResource(name)).Size = (uint)Host.Size.Y;
+                    Log.Info($"Font {name} loaded");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Cannot load font {name}:{ex}");
+                }
+            }
+        }
     }
 
     internal UIBox ScreenSurface { get; init; }
+    internal UIBox Overlay { get; init; }
+    internal UIBox Background { get; init; }
 
     public void LoadConfigFile<T>(out T cfg)
         where T : ConfigType, new()
