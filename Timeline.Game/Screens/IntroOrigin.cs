@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using System.Numerics;
 using Line.Framework;
 using Line.Framework.Graphics;
 using Line.Framework.Resource.Graphic;
+using Line.Framework.Types;
 using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
@@ -28,9 +30,9 @@ public partial class Intro : Screen
             color = new(1, 1, 1, 1),
             FontId = defaultFont,
             Text = $"-Timeline- {host?.VersionTag ?? ""}",
-            Anchor = new(0.5f),
-            Position = new(new(), new(0.5f)),
-            Size = new(new(), new(9, 9)),
+            Anchor = new Vector2(0.5f),
+            Position = new Coord2(new(), new(0.5f)),
+            Size = new Coord2(new(), new(9, 9)),
             FontScale = 0,
             Parent = this,
             XAlignment = Alignment.Center,

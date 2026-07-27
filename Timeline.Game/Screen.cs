@@ -1,4 +1,5 @@
 using Line.Framework.Graphics;
+using Line.Framework.Types;
 using Line.Framework.UI;
 
 namespace Timeline.Game.Screen;
@@ -29,7 +30,7 @@ public abstract class Screen : UIWidget, IDescription
         FocusScreen?.Parent = null;
         FocusScreen = scr;
         scr.Parent = TimelineGame.Running?.ScreenSurface;
-        scr.Size = new(new(), new(1, 1));
+        scr.Size = new Coord2(new(), new(1, 1));
         if (scr == null)
         {
             if (Loadqueue[0] == scr)
@@ -68,7 +69,7 @@ public abstract class Screen : UIWidget, IDescription
         FocusScreen?.Parent = null;
         FocusScreen = scr;
         scr.Parent = TimelineGame.Running?.ScreenSurface;
-        scr.Size = new(new(), new(1, 1));
+        scr.Size = new Coord2(new(), new(1, 1));
         if (scr == null)
         {
             if (Loadqueue[0] == scr)

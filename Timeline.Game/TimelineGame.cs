@@ -5,6 +5,7 @@ using Line.Framework;
 using Line.Framework.Graphics;
 using Line.Framework.IO;
 using Line.Framework.Resource.Graphic;
+using Line.Framework.Types;
 using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
@@ -84,7 +85,7 @@ public partial class TimelineGame
         {
             Name = "Screen",
             color = new(0, 0, 0, 0),
-            Size = new(new(), new(1, 1)),
+            Size = new Coord2(new(), new(1, 1)),
             Z = 1,
             TouchMode = TouchModes.All,
             Parent = @Host.Root,
@@ -93,7 +94,7 @@ public partial class TimelineGame
         {
             Name = "Overlay",
             color = new(0, 0, 0, 0),
-            Size = new(new(), new(1, 1)),
+            Size = new Coord2(new(), new(1, 1)),
             Z = 2,
             TouchMode = TouchModes.Children,
             Parent = @Host.Root,
@@ -102,7 +103,7 @@ public partial class TimelineGame
         {
             Name = "Background",
             color = new(0, 0, 0, 1),
-            Size = new(new(), new(1, 1)),
+            Size = new Coord2(new(), new(1, 1)),
             Z = 0,
             TouchMode = TouchModes.None,
             Parent = @Host.Root,
