@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using Line.Framework;
 using Line.Framework.Graphics;
+using Line.Framework.IO;
 using Line.Framework.Resource.Graphic;
 using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
@@ -41,13 +42,15 @@ public partial class TimelineGame
 
     public Stopwatch GameStopwatch { get; } = new();
 
-    public TimelineGame(string[] args)
+    internal async Task Game(string[] args)
     {
         if (Running != null)
             return;
         Running = this;
         GameStopwatch.Start();
         Directory.CreateDirectory(Path.Combine(GameDir, "Logs"));
+        Directory.CreateDirectory(Path.Combine(GameDir, "Files"));
+        File = new(Path.Combine(GameDir, "Files"));
         Log.SetLogFile(
             Path.Combine(GameDir, "Logs", $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}.log")
         );
@@ -56,11 +59,9 @@ public partial class TimelineGame
         else
             Log.SetMinLevel(LogLevel.Info);
 
-        LoadConfigFile(out GraphicsCfg graphicsCfg);
-        GameGraphicsCfg = graphicsCfg;
+        GameGraphicsCfg = await LoadConfigFile<GraphicsCfg>();
 
-        LoadConfigFile(out UserInterfaceCfg userInterfaceCfg);
-        GameUserInterfaceCfg = userInterfaceCfg;
+        GameUserInterfaceCfg = await LoadConfigFile<UserInterfaceCfg>();
 
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
@@ -77,7 +78,7 @@ public partial class TimelineGame
         };
         Log.Debug($"[{GetType().Name}] Window created");
 
-        var fontTask=LoadAllFont();
+        var fontTask = LoadAllFont();
 
         ScreenSurface = new UIBox()
         {
@@ -111,7 +112,12 @@ public partial class TimelineGame
 
         Log.Debug("Loading intro screen");
         Screen.Intro intro = new();
-        Screen.Screen.LoadScreen(intro);
+        await Screen.Screen.LoadScreenASync(intro);
+    }
+
+    public TimelineGame(string[] args)
+    {
+        Task.Run(() => Game(args)).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     async Task LoadAllFont()
@@ -146,35 +152,47 @@ public partial class TimelineGame
         }
     }
 
-    internal UIBox ScreenSurface { get; init; }
-    internal UIBox Overlay { get; init; }
-    internal UIBox Background { get; init; }
+    internal UIBox ScreenSurface { get; private set; }
+    internal UIBox Overlay { get; private set; }
+    internal UIBox Background { get; private set; }
+    public FileManager File { get; private set; }
 
-    public void LoadConfigFile<T>(out T cfg)
+    public async Task<T> LoadConfigFile<T>()
         where T : ConfigType, new()
     {
         string typeName = typeof(T).Name;
-        string filePath = Path.Combine(GameDir, "Data", "Config", $"{typeName}.json");
-
-        try
+        string filePath = Path.Combine("Config", $"{typeName}.json");
+        T cfg;
+        void CreateIt()
         {
-            string json = File.ReadAllText(filePath);
-            cfg = JsonSerializer.Deserialize<T>(json) ?? new T();
+            cfg = new T();
+            File.CreateDirectory(Path.GetDirectoryName(filePath)!);
         }
-        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        if (File.FileExists(filePath))
+            try
+            {
+                string json = await File.ReadAllTextAsync(filePath);
+                cfg = JsonSerializer.Deserialize<T>(json) ?? new T();
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                Log.Info($"Config file not found, creating default for {typeName}...");
+                CreateIt();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[{typeName}] Load error: {ex}");
+                cfg = new T();
+                throw;
+            }
+        else
         {
             Log.Info($"Config file not found, creating default for {typeName}...");
-            cfg = new T();
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            CreateIt();
         }
-        catch (Exception ex)
-        {
-            Log.Error($"[{typeName}] Load error: {ex}");
-            cfg = new T();
-            throw;
-        }
-        File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(cfg));
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(cfg));
         Log.Debug($"Config {typeName} loaded");
+        return cfg;
     }
 
     internal Window @Host { get; set; }
