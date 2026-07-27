@@ -61,8 +61,12 @@ public partial class TimelineGame
             Log.SetMinLevel(LogLevel.Info);
 
         GameGraphicsCfg = await LoadConfigFile<GraphicsCfg>();
-
+        GameStorageCfg = await LoadConfigFile<StorageCfg>();
         GameUserInterfaceCfg = await LoadConfigFile<UserInterfaceCfg>();
+
+        File.AllowCache = GameStorageCfg.EnableCache;
+        File.CompressFile = GameStorageCfg.EnableCompress;
+        File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
 
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
@@ -199,5 +203,6 @@ public partial class TimelineGame
     internal Window @Host { get; set; }
     internal GraphicsCfg GameGraphicsCfg { get; set; }
     internal UserInterfaceCfg GameUserInterfaceCfg { get; set; }
+    internal StorageCfg GameStorageCfg { get; set; }
     public static TimelineGame Running { get; private set; }
 }
