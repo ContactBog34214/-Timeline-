@@ -1,10 +1,8 @@
-using System.Diagnostics;
-using Line.Framework;
-using Line.Framework.Graphics;
-using Line.Framework.Resource.Graphic;
+using System.Numerics;
+using Line.Framework.Types;
 using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
-using Timeline.Game.Config;
+using Timeline.Game.Maths;
 
 namespace Timeline.Game.Screen;
 
@@ -12,32 +10,25 @@ public partial class Intro : Screen
 {
     private async Task OriginScreen()
     {
-        float L(float a)
-        {
-            return 1 - (1f - a) * (1f - a) * (1f - a);
-        }
 
         var host = TimelineGame.Running;
         var rm = host?.Host?.Resource;
         var defaultFont = host?.GameUserInterfaceCfg?.DefaultFont ?? "";
-        var r = rm?.GetResource(defaultFont);
 
         var title = new UIText(rm)
         {
             Name = "Title",
-            color = new(1, 1, 1, 1),
+            color = new RgbaFloat(1, 1, 1, 1f),
             FontId = defaultFont,
             Text = $"-Timeline- {host?.VersionTag ?? ""}",
-            Anchor = new(0.5f),
-            Position = new(new(), new(0.5f)),
-            Size = new(new(), new(9, 9)),
-            FontScale = 0,
+            Anchor = new Vector2(0.5f),
+            Position = new Coord2(new(), new(0.5f)),
+            Size = new Coord2(new(), new(1)),
+            FontSize = 0,
             Parent = this,
             XAlignment = Alignment.Center,
             YAlignment = Alignment.Center,
             TouchMode = TouchModes.None,
-            Opacity = 0,
-            Scale = new(1f / 9f),
         };
 
         Base.Start();
@@ -48,14 +39,15 @@ public partial class Intro : Screen
             {
                 var a = t / 2500f;
                 title.Opacity = t / 1400f;
-                title.FontScale = L(a);
+                title.FontSize = InterpolationTool.QuadraticEaseOut(new(0,0),new(1,0),a).X*host.Host.Size.Y/13.5f;
             }
             else
             {
                 var a = t / 2500f;
                 title.Opacity = 1f - (t - 1400f) / 1100f;
-                title.FontScale = L(a);
+                title.FontSize = InterpolationTool.QuadraticEaseOut(new(0,0),new(1,0),a).X*host.Host.Size.Y/13.5f;
             }
+            await Task.Delay(2);
         }
         title.Dispose();
     }

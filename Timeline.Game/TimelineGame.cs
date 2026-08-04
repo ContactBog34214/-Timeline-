@@ -5,6 +5,7 @@ using Line.Framework;
 using Line.Framework.Graphics;
 using Line.Framework.IO;
 using Line.Framework.Resource.Graphic;
+using Line.Framework.Types;
 using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
@@ -60,8 +61,12 @@ public partial class TimelineGame
             Log.SetMinLevel(LogLevel.Info);
 
         GameGraphicsCfg = await LoadConfigFile<GraphicsCfg>();
-
+        GameStorageCfg = await LoadConfigFile<StorageCfg>();
         GameUserInterfaceCfg = await LoadConfigFile<UserInterfaceCfg>();
+
+        File.AllowCache = GameStorageCfg.EnableCache;
+        File.CompressFile = GameStorageCfg.EnableCompress;
+        File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
 
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
@@ -78,14 +83,27 @@ public partial class TimelineGame
         };
         Log.Debug($"[{GetType().Name}] Window created");
 
-        var fontTask = LoadAllFont();
+        var fontTask = LoadResourceGroupToGboal(
+            "Fonts",
+            ["ttf"],
+            "Font",
+            new(
+                //token没啥用（
+                async (res, token) =>
+                {
+                    ((Font)res)?.Size = (uint)Host.Size.Y;
+                }
+            )
+        );
+
+        var imgTask = LoadResourceGroupToGboal("Textures", ["png", "jpg", "jpeg"], "Image");
 
         ScreenSurface = new UIBox()
         {
             Name = "Screen",
             color = new(0, 0, 0, 0),
-            Size = new(new(), new(1, 1)),
-            Z = 1,
+            Size = new Coord2(new(), new(1, 1)),
+            Index = 1,
             TouchMode = TouchModes.All,
             Parent = @Host.Root,
         };
@@ -93,22 +111,24 @@ public partial class TimelineGame
         {
             Name = "Overlay",
             color = new(0, 0, 0, 0),
-            Size = new(new(), new(1, 1)),
-            Z = 2,
+            Size = new Coord2(new(), new(1, 1)),
+            Index = 2,
             TouchMode = TouchModes.Children,
             Parent = @Host.Root,
+            Visible = new Func<bool>(() => Screen.Screen.FocusScreen?.Overlays ?? true),
         };
         Background = new UIBox()
         {
             Name = "Background",
             color = new(0, 0, 0, 1),
-            Size = new(new(), new(1, 1)),
-            Z = 0,
+            Size = new Coord2(new(), new(1, 1)),
+            Index = 0,
             TouchMode = TouchModes.None,
             Parent = @Host.Root,
         };
 
         fontTask?.Wait();
+        imgTask?.Wait();
 
         Log.Debug("Loading intro screen");
         Screen.Intro intro = new();
@@ -120,36 +140,55 @@ public partial class TimelineGame
         Task.Run(() => Game(args)).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    async Task LoadAllFont()
+    async Task LoadResourceGroupToGboal(
+        string GroupName,
+        string[] GroupType,
+        string Loader,
+        Func<object, CancellationToken, Task> CreateHook = null,
+        CancellationToken token = default
+    )
     {
         var rm = Host.Resource;
         var assembly = Assembly.GetExecutingAssembly();
 
         var names = assembly.GetManifestResourceNames();
+        List<Task> HookPool = [];
         foreach (var name in names)
         {
+            if (token.IsCancellationRequested)
+                break;
             var sp = name.Split('.');
             if (
                 sp.Length > 5
                 && sp[0] == "Timeline"
                 && sp[1] == "Game"
                 && sp[2] == "Assets"
-                && sp[3] == "Fonts"
-                && sp.Last() == "ttf"
+                && sp[3] == GroupName
+                && GroupType.Contains(sp.Last())
             )
             {
+                Stream tg = null;
                 try
                 {
-                    rm.Create("Font", name, assembly.GetManifestResourceStream(name));
-                    ((Font)rm.GetResource(name)).Size = (uint)Host.Size.Y;
-                    Log.Info($"Font {name} loaded");
+                    tg = assembly.GetManifestResourceStream(name);
+                    rm.Create(Loader, name, tg);
+                    if (CreateHook != null)
+                        HookPool.Add(CreateHook(rm.GetResource(name), token));
+                    Log.Debug($"{GroupName}: {name} loaded.Loader:{Loader}");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Cannot load font {name}:{ex}");
+                    Log.Error($"Cannot load resource({GroupName}/{Loader}) {name}:{ex}");
+                }
+                finally
+                {
+                    if (tg != null)
+                        await tg.DisposeAsync();
                 }
             }
         }
+        if (CreateHook != null)
+            await Task.WhenAll(HookPool);
     }
 
     internal UIBox ScreenSurface { get; private set; }
@@ -198,5 +237,6 @@ public partial class TimelineGame
     internal Window @Host { get; set; }
     internal GraphicsCfg GameGraphicsCfg { get; set; }
     internal UserInterfaceCfg GameUserInterfaceCfg { get; set; }
+    internal StorageCfg GameStorageCfg { get; set; }
     public static TimelineGame Running { get; private set; }
 }
