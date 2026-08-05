@@ -19,7 +19,7 @@ public partial class Intro : Screen
         {
             Name = "Title",
             color = new RgbaFloat(1, 1, 1, 1f),
-            FontId = defaultFont,
+            FontId = [defaultFont],
             Text = $"-Timeline- {host?.VersionTag ?? ""}",
             Anchor = new Vector2(0.5f),
             Position = new Coord2(new(), new(0.5f)),
