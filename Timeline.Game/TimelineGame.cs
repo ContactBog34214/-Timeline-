@@ -9,6 +9,7 @@ using Line.Framework.Types;
 using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
+using Timeline.Game.Screen;
 
 namespace Timeline.Game;
 
@@ -80,8 +81,17 @@ public partial class TimelineGame
                 if (Screen.Screen.FocusScreen?.AllowExit ?? true)
                     Task.Run(() => @Host.Dispose());
             },
+            VSync = GameGraphicsCfg?.VSync ?? false,
         };
         Log.Debug($"[{GetType().Name}] Window created");
+
+        Host.OnUpdate += (_) =>
+        {
+            if (Host.VSync != (GameGraphicsCfg?.VSync ?? false))
+                Host.VSync = GameGraphicsCfg?.VSync ?? false;
+            if (!Host.IsFocus && !Host.VSync)
+                Host.VSync = true;
+        };
 
         var fontTask = LoadResourceGroupToGboal(
             "Fonts",
@@ -125,6 +135,15 @@ public partial class TimelineGame
             Index = 0,
             TouchMode = TouchModes.None,
             Parent = @Host.Root,
+        };
+        DebugInfoSurface = new DebugSurface()
+        {
+            Name = "DebugInfoSurface",
+            Size = new Coord2(new(), new(1, 1)),
+            Index = 32767,
+            TouchMode = TouchModes.Children,
+            Parent = @Host.Root,
+            Visible = true,
         };
 
         fontTask?.Wait();
@@ -195,6 +214,7 @@ public partial class TimelineGame
     internal UIBox Overlay { get; private set; }
     internal UIBox Background { get; private set; }
     public FileManager File { get; private set; }
+    public UIWidget DebugInfoSurface { get; private set; }
 
     public async Task<T> LoadConfigFile<T>()
         where T : ConfigType, new()
