@@ -10,6 +10,7 @@ using Line.Framework.UI;
 using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
 using Timeline.Game.Screen;
+using Timeline.Game.Sprites;
 
 namespace Timeline.Game;
 
@@ -149,6 +150,17 @@ public partial class TimelineGame
         fontTask?.Wait();
         imgTask?.Wait();
 
+        GameCursor = new()
+        {
+            Name = "Cursor",
+            Position = new(() => new(Host.Input.Mouse.Position, new()), true),
+            Size = new(() => new(new(32 * GameUserInterfaceCfg.CursorSize), new()), true),
+            Parent = Host.Root,
+            Visible = new(() => (!Screen.Screen.FocusScreen?.HideCursor) ?? true, true),
+            Index=65536,
+            TouchMode=TouchModes.None,
+        };
+
         Log.Debug("Loading intro screen");
         Screen.Intro intro = new();
         await Screen.Screen.LoadScreenASync(intro);
@@ -212,6 +224,7 @@ public partial class TimelineGame
 
     internal UIBox ScreenSurface { get; private set; }
     internal UIBox Overlay { get; private set; }
+    internal Cursor GameCursor { get; private set; }
     internal UIBox Background { get; private set; }
     public FileManager File { get; private set; }
     public UIWidget DebugInfoSurface { get; private set; }
