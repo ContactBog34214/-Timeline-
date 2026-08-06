@@ -22,8 +22,8 @@ public partial class DebugSurface : UIWidget
         pf.FontSize = 25;
         pf.FontId = ["Timeline.Game.Assets.Fonts.CascadiaMono.ttf","Timeline.Game.Assets.Fonts.NotoSansSC.ttf"];
         pf.Parent = this;
-        pf.RoundedCorner=10;
-        pf.Size = new Coord2(new(100, 70), new());
+        pf.RoundedCorner=6;
+        pf.Size = new Coord2(new(100, 60), new());
         pf.Position = new Coord2(new(-20, -20), new(1, 1));
     }
 }
