@@ -1,12 +1,12 @@
 using System.Numerics;
+using Line.Framework.Default.Graphics;
+using Line.Framework.Default.UIWidgets;
 using Line.Framework.Graphics;
 using Line.Framework.IO;
 using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
-using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Maths;
-using static Line.Framework.Graphics.WindowsRenderer;
 
 namespace Timeline.Game.Screen.Debug;
 
@@ -104,7 +104,7 @@ public sealed class PerformanceMonitor : UIWidget
 
     readonly Window Host = null;
 
-    public override void RendererContext(RendererContextArgs args)
+    public override async Task RendererContext(RendererContextArgs args)
     {
         float rcs = RoundedCorner;
         if (args.width / 2 < rcs)
@@ -126,7 +126,7 @@ public sealed class PerformanceMonitor : UIWidget
             Collector = TextCollector,
         };
         ResourceSetArg Circle =
-            Host.Resource.GetResource("Timeline.Game.Assets.Textures.Circle.png") as ResourceSetArg;
+            await Host.Resource.GetResource("Timeline.Game.Assets.Textures.Circle.png") as ResourceSetArg;
 
         void DrawUVBox(Vector2 Pos, Vector2 Size, Coord2 StartUV, Coord2 EndUV)
         {

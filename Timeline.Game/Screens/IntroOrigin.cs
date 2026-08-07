@@ -1,7 +1,7 @@
 using System.Numerics;
+using Line.Framework.Default.UIWidgets;
 using Line.Framework.Types;
 using Line.Framework.UI;
-using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Maths;
 
 namespace Timeline.Game.Screen;

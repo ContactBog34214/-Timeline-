@@ -1,6 +1,6 @@
 using System.Numerics;
+using Line.Framework.Default.UIWidgets;
 using Line.Framework.Types;
-using Line.Framework.UI.DefaultWidget;
 
 namespace Timeline.Game.Screen.Gaming;
 

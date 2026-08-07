@@ -93,7 +93,7 @@ public abstract class Screen : UIWidget, IDescription
     private static readonly List<Screen> Loadqueue = new();
     public virtual string Description { get; set; } = "";
 
-    public override void RendererContext(RendererContextArgs args)
+    public override async Task RendererContext(RendererContextArgs args)
     {
         var collector = args.Collector;
         var color = new Veldrid.RgbaFloat(0, 0, 0, 1);
@@ -102,8 +102,8 @@ public abstract class Screen : UIWidget, IDescription
         {
             return;
         }
-        var tl = new WindowsRenderer.Vertex(new(0, 0), color, new(new(), new(0, 0)), null, null, 1);
-        var tr = new WindowsRenderer.Vertex(
+        var tl = new Vertex(new(0, 0), color, new(new(), new(0, 0)), null, null, 1);
+        var tr = new Vertex(
             new((float)args.width, 0),
             color,
             new(new(), new(1, 0)),
@@ -111,7 +111,7 @@ public abstract class Screen : UIWidget, IDescription
             null,
             1
         );
-        var bl = new WindowsRenderer.Vertex(
+        var bl = new Vertex(
             new(0, (float)args.height),
             color,
             new(new(), new(0, 1)),
@@ -119,7 +119,7 @@ public abstract class Screen : UIWidget, IDescription
             null,
             1
         );
-        var br = new WindowsRenderer.Vertex(
+        var br = new Vertex(
             new((float)args.width, (float)args.height),
             color,
             new(new(), new(1, 1)),

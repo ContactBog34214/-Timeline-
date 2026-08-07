@@ -2,12 +2,13 @@
 using System.Reflection;
 using System.Text.Json;
 using Line.Framework;
+using Line.Framework.Default.Graphics;
+using Line.Framework.Default.UIWidgets;
 using Line.Framework.Graphics;
 using Line.Framework.IO;
 using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
-using Line.Framework.UI.DefaultWidget;
 using Timeline.Game.Config;
 using Timeline.Game.Screen;
 using Timeline.Game.Sprites;
@@ -70,6 +71,8 @@ public partial class TimelineGame
         File.CompressFile = GameStorageCfg.EnableCompress;
         File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
 
+        
+
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
             FullScreen = GameGraphicsCfg?.FullScreen ?? true,
@@ -90,7 +93,7 @@ public partial class TimelineGame
         {
             if (Host.VSync != (GameGraphicsCfg?.VSync ?? false))
                 Host.VSync = GameGraphicsCfg?.VSync ?? false;
-            if (!Host.IsFocus && !Host.VSync)
+            if (!Host.IsFocus && !Host.VSync && GameGraphicsCfg.LimitFPSOnMinixmum)
                 Host.VSync = true;
         };
 
@@ -147,8 +150,8 @@ public partial class TimelineGame
             Visible = true,
         };
 
-        fontTask?.Wait();
-        imgTask?.Wait();
+        await fontTask;
+        await imgTask;
 
         GameCursor = new()
         {
@@ -157,8 +160,8 @@ public partial class TimelineGame
             Size = new(() => new(new(32 * GameUserInterfaceCfg.CursorSize), new()), true),
             Parent = Host.Root,
             Visible = new(() => (!Screen.Screen.FocusScreen?.HideCursor) ?? true, true),
-            Index=65536,
-            TouchMode=TouchModes.None,
+            Index = 65536,
+            TouchMode = TouchModes.None,
         };
 
         Log.Debug("Loading intro screen");
@@ -202,9 +205,9 @@ public partial class TimelineGame
                 try
                 {
                     tg = assembly.GetManifestResourceStream(name);
-                    rm.Create(Loader, name, tg);
+                    await rm.Create(Loader, name, tg);
                     if (CreateHook != null)
-                        HookPool.Add(CreateHook(rm.GetResource(name), token));
+                        HookPool.Add(CreateHook(await rm.GetResource(name), token));
                     Log.Debug($"{GroupName}: {name} loaded.Loader:{Loader}");
                 }
                 catch (Exception ex)
