@@ -10,4 +10,5 @@ public partial class GraphicsCfg : ConfigType
     public bool VSync { get; set; } = true;
     public float FPSLimit { get; set; } = 1000;
     public bool ShowFPS { get; set; } = true;
+    public bool LimitFPSOnMinixmum { get; set; } = true;
 }

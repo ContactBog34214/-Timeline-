@@ -17,19 +17,19 @@ public class Cursor : UIWidget
         rm = TimelineGame.Running.Host.Resource;
     }
 
-    public override void RendererContext(RendererContextArgs args)
+    public override async Task RendererContext(RendererContextArgs args)
     {
         Vector2 sizeOnScreen = new((float)args.width, (float)args.height);
         if (!(sizeOnScreen.X <= 0f) || !(sizeOnScreen.Y <= 0f))
         {
             UIDrawCollector collector = args.Collector;
             if (
-                rm.GetResource("Timeline.Game.Assets.Textures.Cursor.png")
+                await rm.GetResource("Timeline.Game.Assets.Textures.Cursor.png")
                     is ResourceSetArg { ResourceSet: var resourceSet, Texture: var texture }
                 && resourceSet != null
             )
             {
-                WindowsRenderer.Vertex vertex5 = new WindowsRenderer.Vertex(
+                Vertex vertex5 = new Vertex(
                     new Vector2(0f, 0f),
                     Color,
                     new Coord2(default(Vector2), new Vector2(0f, 0f)),
@@ -37,7 +37,7 @@ public class Cursor : UIWidget
                     resourceSet,
                     1f
                 );
-                WindowsRenderer.Vertex vertex6 = new WindowsRenderer.Vertex(
+                Vertex vertex6 = new Vertex(
                     new Vector2((float)args.height, 0f),
                     Color,
                     new Coord2(default(Vector2), new Vector2(1f, 0f)),
@@ -45,7 +45,7 @@ public class Cursor : UIWidget
                     resourceSet,
                     1f
                 );
-                WindowsRenderer.Vertex vertex7 = new WindowsRenderer.Vertex(
+                Vertex vertex7 = new Vertex(
                     new Vector2(0f, (float)args.width),
                     Color,
                     new Coord2(default(Vector2), new Vector2(0f, 1f)),
@@ -53,7 +53,7 @@ public class Cursor : UIWidget
                     resourceSet,
                     1f
                 );
-                WindowsRenderer.Vertex vertex8 = new WindowsRenderer.Vertex(
+                Vertex vertex8 = new Vertex(
                     new Vector2((float)args.height, (float)args.width),
                     Color,
                     new Coord2(default(Vector2), new Vector2(1f, 1f)),
@@ -61,14 +61,8 @@ public class Cursor : UIWidget
                     resourceSet,
                     1f
                 );
-                collector.DrawVertex(
-                    new WindowsRenderer.Vertex[3] { vertex5, vertex6, vertex7 },
-                    this
-                );
-                collector.DrawVertex(
-                    new WindowsRenderer.Vertex[3] { vertex6, vertex7, vertex8 },
-                    this
-                );
+                collector.DrawVertex(new Vertex[3] { vertex5, vertex6, vertex7 }, this);
+                collector.DrawVertex(new Vertex[3] { vertex6, vertex7, vertex8 }, this);
             }
         }
     }
