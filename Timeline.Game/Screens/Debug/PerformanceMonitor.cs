@@ -3,22 +3,23 @@ using Line.Framework.Default.Graphics;
 using Line.Framework.Default.UIWidgets;
 using Line.Framework.Graphics;
 using Line.Framework.IO;
+using Line.Framework.Resource;
 using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
 using Timeline.Game.Maths;
+using Timeline.Game.UIWidgets;
 
 namespace Timeline.Game.Screen.Debug;
 
-public sealed class PerformanceMonitor : UIWidget
+public sealed class PerformanceMonitor : NineGridScaleImage
 {
     public DynamicValue<bool> FPSVisiable { get; set; } = true;
     public DynamicValue<bool> InputLagVisiable { get; set; } = true;
     private readonly Action<double> OnRender = null;
     private readonly Action<double> OnUpdate = null;
     public float RoundedCorner { get; set; } = 10;
-    public RgbaFloat BackgroundColor { get; set; } = new(127, 127, 127, 48);
-    public RgbaFloat TextColor { get; set; } = new(175,255,168, 255);
+    public RgbaFloat TextColor { get; set; } = new(175, 255, 168, 255);
     public Alignment XAlignment
     {
         get => Printer.XAlignment;
@@ -58,8 +59,10 @@ public sealed class PerformanceMonitor : UIWidget
         }
     } = 0.2f;
 
-    public PerformanceMonitor()
+    public PerformanceMonitor(ResourceManager rm)
+        : base(rm)
     {
+        Color = new RgbaFloat(127, 127, 127, 48);
         Host = TimelineGame.Running?.Host ?? null;
         if (!(Host?.Exists ?? false))
             throw new Exception($"No any games are running");
@@ -112,10 +115,18 @@ public sealed class PerformanceMonitor : UIWidget
         if (args.height / 2 < rcs)
             rcs = (float)args.height / 2;
 
-        Vector2 DrawArea =
-            new Vector2((float)args.width, (float)args.height) - 2 * new Vector2(rcs);
-
         var collector = args.Collector;
+
+        var size = Math.Min(args.width, args.height);
+        UseWidgetSize = true;
+        Top = Bottom = Left = Right = size / 2f;
+        CornerScale = rcs / size;
+        TextureId = "Timeline.Game.Assets.Textures.Circle.png";
+        await base.RendererContext(args);
+
+        Vector2 DrawArea =
+            new Vector2((float)args.width, (float)args.height)
+            - new Vector2(rcs) * new Vector2(0.5f, 0);
         UIDrawCollector TextCollector = new();
         RendererContextArgs TextArgs = new()
         {
@@ -125,131 +136,14 @@ public sealed class PerformanceMonitor : UIWidget
             height = DrawArea.Y,
             Collector = TextCollector,
         };
-        ResourceSetArg Circle =
-            await Host.Resource.GetResource("Timeline.Game.Assets.Textures.Circle.png") as ResourceSetArg;
 
-        void DrawUVBox(Vector2 Pos, Vector2 Size, Coord2 StartUV, Coord2 EndUV)
-        {
-            if (Circle == null)
-                return;
-            Vector2 sUV =
-                StartUV.offset / new Vector2(Circle.Texture.Width, Circle.Texture.Height)
-                + StartUV.scale;
-            Vector2 eUV =
-                EndUV.offset / new Vector2(Circle.Texture.Width, Circle.Texture.Height)
-                + EndUV.scale;
-            Vertex tl = new(
-                Pos,
-                BackgroundColor,
-                new(new(), sUV),
-                Circle.Texture,
-                Circle.ResourceSet,
-                1
-            );
-            Vertex tr = new(
-                Pos + new Vector2(Size.X, 0),
-                BackgroundColor,
-                new(new(), new(eUV.X, sUV.Y)),
-                Circle.Texture,
-                Circle.ResourceSet,
-                1
-            );
-            Vertex br = new(
-                Pos + Size,
-                BackgroundColor,
-                new(new(), eUV),
-                Circle.Texture,
-                Circle.ResourceSet,
-                1
-            );
-            Vertex bl = new(
-                Pos + new Vector2(0, Size.Y),
-                BackgroundColor,
-                new(new(), new(sUV.X, eUV.Y)),
-                Circle.Texture,
-                Circle.ResourceSet,
-                1
-            );
-            collector.DrawVertex([tl, tr, bl], this);
-            collector.DrawVertex([tr, bl, br], this);
-        }
-        void DrawBox(Vector2 Pos, Vector2 Size)
-        {
-            Vertex tl = new(Pos, BackgroundColor, new(new(), new(0, 0)), null, null, 1);
-            Vertex tr = new(
-                Pos + new Vector2(Size.X, 0),
-                BackgroundColor,
-                new(new(), new(1, 0)),
-                null,
-                null,
-                1
-            );
-            Vertex br = new(Pos + Size, BackgroundColor, new(new(), new(1, 1)), null, null, 1);
-            Vertex bl = new(
-                Pos + new Vector2(0, Size.Y),
-                BackgroundColor,
-                new(new(), new(0, 1)),
-                null,
-                null,
-                1
-            );
-            collector.DrawVertex([tl, tr, bl], this);
-            collector.DrawVertex([tr, bl, br], this);
-        }
-        if (Circle?.Texture != null)
-        {
-            //Rounded Corner
-            {
-                DrawUVBox(new(0, 0), new(rcs), new(new(), new(0)), new(new(), new(0.5f)));
-                DrawUVBox(
-                    new((float)args.width - rcs, 0),
-                    new(rcs),
-                    new(new(), new(0.5f, 0)),
-                    new(new(), new(1, 0.5f))
-                );
-                DrawUVBox(
-                    new(0, (float)args.height - rcs),
-                    new(rcs),
-                    new(new(), new(0, 0.5f)),
-                    new(new(), new(0.5f, 1f))
-                );
-                DrawUVBox(
-                    new((float)args.width - rcs, (float)args.height - rcs),
-                    new(rcs),
-                    new(new(), new(0.5f, 0.5f)),
-                    new(new(), new(1, 1))
-                );
-            }
-            //Fill
-            {
-                DrawBox(new(rcs, 0), new(DrawArea.X, rcs));
-                DrawBox(new(rcs, rcs + DrawArea.Y), new(DrawArea.X, rcs));
-                DrawBox(new(0, rcs), new(rcs, DrawArea.Y));
-                DrawBox(new(rcs + DrawArea.X, rcs), new(rcs, DrawArea.Y));
-                DrawBox(new(rcs), DrawArea);
-            }
-        }
-
+        Printer?.color = TextColor;
+        Printer?.XAlignment = Alignment.Right;
+        Printer?.YAlignment = Alignment.Center;
         Printer?.RendererContext(TextArgs);
         var tc = TextArgs.Collector;
-        tc.Update();
         foreach (var i in tc.Verts)
-        {
-            List<Vertex> vertices = i.Vert.ToList();
-            for (int idx = 0; idx < vertices.Count; idx++)
-            {
-                var item = vertices[idx];
-                vertices[idx] = new(
-                    item.Position + new Vector2(rcs),
-                    TextColor,
-                    item.UV,
-                    item.Texture,
-                    item.ResourceSet,
-                    item.Opacity
-                );
-            }
-            collector.DrawVertex(vertices.ToArray(), this);
-        }
+            collector.DrawVertex(i.Vert, this);
     }
 
     public override void Dispose()

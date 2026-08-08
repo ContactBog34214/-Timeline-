@@ -103,14 +103,7 @@ public abstract class Screen : UIWidget, IDescription
             return;
         }
         var tl = new Vertex(new(0, 0), color, new(new(), new(0, 0)), null, null, 1);
-        var tr = new Vertex(
-            new((float)args.width, 0),
-            color,
-            new(new(), new(1, 0)),
-            null,
-            null,
-            1
-        );
+        var tr = new Vertex(new((float)args.width, 0), color, new(new(), new(1, 0)), null, null, 1);
         var bl = new Vertex(
             new(0, (float)args.height),
             color,
