@@ -6,6 +6,7 @@ using Line.Framework.Default.Graphics;
 using Line.Framework.Default.UIWidgets;
 using Line.Framework.Graphics;
 using Line.Framework.IO;
+using Line.Framework.Resource;
 using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
@@ -71,13 +72,10 @@ public partial class TimelineGame
         File.CompressFile = GameStorageCfg.EnableCompress;
         File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
 
-        
-
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
             FullScreen = GameGraphicsCfg?.FullScreen ?? true,
             EnableMouseRelative = true,
-            ParallelRender = GameGraphicsCfg?.ParallelRender ?? true,
             FramePerSecond = GameGraphicsCfg?.FPSLimit ?? 1000,
             UpdatePerSecond = 10000,
             RequestQuit = () =>
@@ -105,7 +103,9 @@ public partial class TimelineGame
                 //token没啥用（
                 async (res, token) =>
                 {
-                    ((Font)res)?.Size = (uint)Host.Size.Y;
+                    if (!res?.IsLoaded ?? false)
+                        await res?.Load();
+                    ((Font)res.GetHandle())?.Size = (uint)Host.Size.Y;
                 }
             )
         );
@@ -144,7 +144,7 @@ public partial class TimelineGame
         {
             Name = "DebugInfoSurface",
             Size = new Coord2(new(), new(1, 1)),
-            Index = 32767,
+            Index = 65536,
             TouchMode = TouchModes.Children,
             Parent = @Host.Root,
             Visible = true,
@@ -178,7 +178,7 @@ public partial class TimelineGame
         string GroupName,
         string[] GroupType,
         string Loader,
-        Func<object, CancellationToken, Task> CreateHook = null,
+        Func<IResource, CancellationToken, Task> CreateHook = null,
         CancellationToken token = default
     )
     {
@@ -205,9 +205,10 @@ public partial class TimelineGame
                 try
                 {
                     tg = assembly.GetManifestResourceStream(name);
-                    await rm.Create(Loader, name, tg);
+                    var res = await rm.Create(Loader, name, tg);
+                    await res.Load();
                     if (CreateHook != null)
-                        HookPool.Add(CreateHook(await rm.GetResource(name), token));
+                        HookPool.Add(CreateHook(res, token));
                     Log.Debug($"{GroupName}: {name} loaded.Loader:{Loader}");
                 }
                 catch (Exception ex)

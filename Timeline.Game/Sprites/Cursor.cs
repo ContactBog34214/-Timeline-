@@ -24,7 +24,7 @@ public class Cursor : UIWidget
         {
             UIDrawCollector collector = args.Collector;
             if (
-                await rm.GetResource("Timeline.Game.Assets.Textures.Cursor.png")
+                await rm.GetResource<ResourceSetArg>("Timeline.Game.Assets.Textures.Cursor.png")
                     is ResourceSetArg { ResourceSet: var resourceSet, Texture: var texture }
                 && resourceSet != null
             )
