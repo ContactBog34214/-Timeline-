@@ -62,7 +62,7 @@ public sealed class PerformanceMonitor : NineGridScaleImage
     public PerformanceMonitor(ResourceManager rm)
         : base(rm)
     {
-        Color = new RgbaFloat(127, 127, 127, 48);
+        Color = new RgbaFloat(47, 47, 47, 127);
         Host = TimelineGame.Running?.Host ?? null;
         if (!(Host?.Exists ?? false))
             throw new Exception($"No any games are running");

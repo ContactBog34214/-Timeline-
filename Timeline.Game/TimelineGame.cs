@@ -67,17 +67,20 @@ public partial class TimelineGame
         GameGraphicsCfg = await LoadConfigFile<GraphicsCfg>();
         GameStorageCfg = await LoadConfigFile<StorageCfg>();
         GameUserInterfaceCfg = await LoadConfigFile<UserInterfaceCfg>();
+        GameDebugToolCfg = await LoadConfigFile<DebugToolCfg>();
 
         File.AllowCache = GameStorageCfg.EnableCache;
         File.CompressFile = GameStorageCfg.EnableCompress;
         File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
+
+        GameGraphicsCfg.VSync = false;
 
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
             FullScreen = GameGraphicsCfg?.FullScreen ?? true,
             EnableMouseRelative = true,
             FramePerSecond = GameGraphicsCfg?.FPSLimit ?? 1000,
-            UpdatePerSecond = 10000,
+            UpdatePerSecond = 2000,
             RequestQuit = () =>
             {
                 if (Screen.Screen.FocusScreen?.AllowExit ?? true)
@@ -105,7 +108,7 @@ public partial class TimelineGame
                 {
                     if (!res?.IsLoaded ?? false)
                         await res?.Load();
-                    ((Font)res.GetHandle())?.Size = (uint)Host.Size.Y;
+                    ((Font)res.GetHandle())?.Size = (uint)(Host.Size.Y * 1);
                 }
             )
         );
@@ -273,6 +276,7 @@ public partial class TimelineGame
 
     internal Window @Host { get; set; }
     internal GraphicsCfg GameGraphicsCfg { get; set; }
+    internal DebugToolCfg GameDebugToolCfg { get; set; }
     internal UserInterfaceCfg GameUserInterfaceCfg { get; set; }
     internal StorageCfg GameStorageCfg { get; set; }
     public static TimelineGame Running { get; private set; }
