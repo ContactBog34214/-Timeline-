@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using Line.Framework;
@@ -11,6 +12,7 @@ using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
 using Timeline.Game.Config;
+using Timeline.Game.ResourceTypes;
 using Timeline.Game.Screen;
 using Timeline.Game.Sprites;
 
@@ -89,6 +91,7 @@ public partial class TimelineGame
             VSync = GameGraphicsCfg?.VSync ?? false,
         };
         Log.Debug($"[{GetType().Name}] Window created");
+        Host.Resource.AddType("StreamFile", new TStreamFile());
 
         Host.OnUpdate += (_) =>
         {
@@ -104,7 +107,7 @@ public partial class TimelineGame
             "Font",
             new(
                 //token没啥用（
-                async (res, token) =>
+                async (_, res, token) =>
                 {
                     if (!res?.IsLoaded ?? false)
                         await res?.Load();
@@ -114,6 +117,22 @@ public partial class TimelineGame
         );
 
         var imgTask = LoadResourceGroupToGboal("Textures", ["png", "jpg", "jpeg"], "Image");
+        var langTask = LoadResourceGroupToGboal(
+            "Languages",
+            ["json"],
+            "StreamFile",
+            new(
+                async (id, obj, token) =>
+                {
+                    if (!(obj is RStreamFile))
+                        return;
+                    await obj?.Load();
+                    var t = (obj.GetHandle() as StreamFile)?.Text ?? "";
+                    var name = id.Split('.')[4];
+                    Languages.TryAdd(name, t);
+                }
+            )
+        );
 
         ScreenSurface = new UIBox()
         {
@@ -155,6 +174,8 @@ public partial class TimelineGame
 
         await fontTask;
         await imgTask;
+        await langTask;
+        ReloadLanguage();
 
         GameCursor = new()
         {
@@ -181,7 +202,7 @@ public partial class TimelineGame
         string GroupName,
         string[] GroupType,
         string Loader,
-        Func<IResource, CancellationToken, Task> CreateHook = null,
+        Func<string, IResource, CancellationToken, Task> CreateHook = null,
         CancellationToken token = default
     )
     {
@@ -211,7 +232,7 @@ public partial class TimelineGame
                     var res = await rm.Create(Loader, name, tg);
                     await res.Load();
                     if (CreateHook != null)
-                        HookPool.Add(CreateHook(res, token));
+                        HookPool.Add(CreateHook(name, res, token));
                     Log.Debug($"{GroupName}: {name} loaded.Loader:{Loader}");
                 }
                 catch (Exception ex)
@@ -229,12 +250,57 @@ public partial class TimelineGame
             await Task.WhenAll(HookPool);
     }
 
+    /// <summary>
+    /// 屏幕分段
+    /// </summary>
+    internal UIBox Background { get; private set; }
     internal UIBox ScreenSurface { get; private set; }
     internal UIBox Overlay { get; private set; }
+    internal UIWidget DebugInfoSurface { get; private set; }
     internal Cursor GameCursor { get; private set; }
-    internal UIBox Background { get; private set; }
+
+    /// <summary>
+    /// 管理器
+    /// </summary>
     public FileManager File { get; private set; }
-    public UIWidget DebugInfoSurface { get; private set; }
+    public Localization Localization { get; } = new();
+    internal ConcurrentDictionary<string, string> Languages { get; } = new();
+    private readonly object _reloadLanguageLock = new();
+
+    internal void ReloadLanguage()
+    {
+        lock (_reloadLanguageLock)
+        {
+            Localization.ClearLanguage();
+            foreach (var i in GameUserInterfaceCfg.Language)
+            {
+                if (!Languages.TryGetValue(i, out var lang))
+                {
+                    Log.Warning($"Language {i} does not exist. Skip.");
+                    continue;
+                }
+                try
+                {
+                    Localization.SetLanguage(i, lang);
+                    Log.Info($"Language {i} loaded");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Reload {i} language error:{ex}");
+                }
+            }
+        }
+    }
+
+    internal Window @Host { get; set; }
+
+    /// <summary>
+    /// 配置文件组
+    /// </summary>
+    internal GraphicsCfg GameGraphicsCfg { get; set; }
+    internal DebugToolCfg GameDebugToolCfg { get; set; }
+    internal UserInterfaceCfg GameUserInterfaceCfg { get; set; }
+    internal StorageCfg GameStorageCfg { get; set; }
 
     public async Task<T> LoadConfigFile<T>()
         where T : ConfigType, new()
@@ -274,10 +340,8 @@ public partial class TimelineGame
         return cfg;
     }
 
-    internal Window @Host { get; set; }
-    internal GraphicsCfg GameGraphicsCfg { get; set; }
-    internal DebugToolCfg GameDebugToolCfg { get; set; }
-    internal UserInterfaceCfg GameUserInterfaceCfg { get; set; }
-    internal StorageCfg GameStorageCfg { get; set; }
+    /// <summary>
+    /// 会话
+    /// </summary>
     public static TimelineGame Running { get; private set; }
 }

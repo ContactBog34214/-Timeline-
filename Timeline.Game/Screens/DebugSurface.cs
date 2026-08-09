@@ -52,7 +52,8 @@ public partial class DebugSurface : UIWidget
                         "Timeline.Game.Assets.Fonts.CascadiaMono.ttf",
                         "Timeline.Game.Assets.Fonts.NotoSansSC.ttf",
                     ],
-            MarkPrefix = (a) => $"{a}ms",
+            MarkPrefix = (a) =>
+                Host.Localization.Get("Timeline.Game.DebugSurface.Ms", [a.ToString()]),
             BufferSize = 128,
         };
         Host.Host.OnRender += PerformanceChartRender.Update;
@@ -73,7 +74,8 @@ public partial class DebugSurface : UIWidget
                         "Timeline.Game.Assets.Fonts.CascadiaMono.ttf",
                         "Timeline.Game.Assets.Fonts.NotoSansSC.ttf",
                     ],
-            MarkPrefix = (a) => $"{a}ms",
+            MarkPrefix = (a) =>
+                Host.Localization.Get("Timeline.Game.DebugSurface.Ms", [a.ToString()]),
             BufferSize = 128,
         };
         Host.Host.OnUpdate += PerformanceChartupdate.Update;
