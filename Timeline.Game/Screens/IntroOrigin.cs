@@ -19,7 +19,7 @@ public partial class Intro : Screen
             Name = "Title",
             color = new RgbaFloat(1, 1, 1, 1f),
             FontId = [defaultFont],
-            Text = $"-Timeline- {host?.VersionTag ?? ""}",
+            Text = host.Localization.Get("Timeline.Game.Intro.Title", [host.VersionTag]),
             Anchor = new Vector2(0.5f),
             Position = new Coord2(new(), new(0.5f)),
             Size = new Coord2(new(), new(1)),

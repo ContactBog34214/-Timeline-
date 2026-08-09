@@ -62,7 +62,7 @@ public sealed class PerformanceMonitor : NineGridScaleImage
     public PerformanceMonitor(ResourceManager rm)
         : base(rm)
     {
-        Color = new RgbaFloat(127, 127, 127, 48);
+        Color = new RgbaFloat(47, 47, 47, 127);
         Host = TimelineGame.Running?.Host ?? null;
         if (!(Host?.Exists ?? false))
             throw new Exception($"No any games are running");
@@ -80,12 +80,18 @@ public sealed class PerformanceMonitor : NineGridScaleImage
         {
             if (InputLagVisiable)
             {
-                Printer.Text = $"{((int)(UpdateMs * 10f)) / 10f}ms";
+                Printer.Text = TimelineGame.Running.Localization.Get(
+                    "Timeline.Game.DebugSurface.Ms",
+                    [(((int)(UpdateMs * 10f)) / 10f).ToString()]
+                );
                 if (FPSVisiable)
                     Printer.Text += "\n";
             }
             if (FPSVisiable)
-                Printer.Text += $"{(int)RenderFPS}fps";
+                Printer.Text += TimelineGame.Running.Localization.Get(
+                    "Timeline.Game.DebugSurface.Fps",
+                    [((int)RenderFPS).ToString()]
+                );
         }
 
         OnRender = (b) =>

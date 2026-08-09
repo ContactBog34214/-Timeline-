@@ -11,9 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Line.Framework" Version="2026.113.0" />
+    <PackageReference Include="Line.Framework" Version="2026.114.0" />
     <EmbeddedResource Include="Assets\**\*" />
-    <PackageReference Include="Line.Framework.Default" Version="2026.113.0" />
+    <PackageReference Include="Line.Framework.Default" Version="2026.114.0" />
   </ItemGroup>
 
 </Project>
