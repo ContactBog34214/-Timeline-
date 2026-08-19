@@ -90,4 +90,78 @@ public static class InterpolationTool
         }
         return p[0];
     }
+    public static Vector2 GetPointOnPerfCircle(Vector2 start, Vector2 mid, Vector2 end, float progress)
+    {
+        // 1. 计算圆心
+        if (!TryGetCircleCenter(start, mid, end, out Vector2 center))
+            return Linear([start, mid, end], progress);
+
+        // 2. 半径
+        float radius = Vector2.Distance(start, center);
+
+        // 3. 各点极角
+        float angleStart = (float)Math.Atan2(start.Y - center.Y, start.X - center.X);
+        float angleMid = (float)Math.Atan2(mid.Y - center.Y, mid.X - center.X);
+        float angleEnd = (float)Math.Atan2(end.Y - center.Y, end.X - center.X);
+
+        // 4. 计算从 start 到 end 经过 mid 的总角度（带符号）
+        float totalAngle = GetSignedAngle(angleStart, angleMid, angleEnd);
+
+        // 5. 插值角度
+        float angle = angleStart + totalAngle * Math.Clamp(progress, 0f, 1f);
+
+        // 6. 返回点
+        return center + new Vector2(radius * (float)Math.Cos(angle), radius * (float)Math.Sin(angle));
+    }
+
+    private static bool TryGetCircleCenter(Vector2 a, Vector2 b, Vector2 c, out Vector2 center)
+    {
+        float ax = a.X, ay = a.Y;
+        float bx = b.X, by = b.Y;
+        float cx = c.X, cy = c.Y;
+
+        float d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+        if (Math.Abs(d) < 1e-6f)
+        {
+            center = Vector2.Zero;
+            return false;
+        }
+
+        float ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d;
+        float uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
+        center = new Vector2(ux, uy);
+        return true;
+    }
+
+    private static float GetSignedAngle(float start, float mid, float end)
+    {
+        // 归一化差值到 [-PI, PI]
+        float Normalize(float a)
+        {
+            while (a > Math.PI) a -= 2 * (float)Math.PI;
+            while (a < -Math.PI) a += 2 * (float)Math.PI;
+            return a;
+        }
+
+        float deltaMid = Normalize(mid - start);
+        float deltaEnd = Normalize(end - start);
+
+        // 如果 deltaMid 和 deltaEnd 同号，且 deltaEnd 包含 deltaMid（绝对值更大），直接返回 deltaEnd
+        if (Math.Sign(deltaMid) == Math.Sign(deltaEnd) && Math.Abs(deltaMid) <= Math.Abs(deltaEnd))
+            return deltaEnd;
+
+        // 否则调整 deltaEnd 加或减 2PI，使 deltaMid 落在 0 和调整后的值之间
+        float candidate1 = deltaEnd + (deltaEnd >= 0 ? -2 * (float)Math.PI : 2 * (float)Math.PI);
+        float candidate2 = deltaEnd + (deltaEnd >= 0 ? 2 * (float)Math.PI : -2 * (float)Math.PI);
+
+        bool Between(float angle, float a, float b)
+        {
+            if (a <= b) return angle >= a && angle <= b;
+            else return angle >= b && angle <= a;
+        }
+
+        if (Between(deltaMid, 0, candidate1)) return candidate1;
+        if (Between(deltaMid, 0, candidate2)) return candidate2;
+        return deltaEnd; // 回退
+    }
 }
