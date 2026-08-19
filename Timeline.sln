@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Game", "Timeline.G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Desktop", "Timeline.Desktop\Timeline.Desktop.csproj", "{19EF0F18-51F1-4BB7-B630-02687F8D7690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Timeline", "Timeline.Timeline\Timeline.Timeline.csproj", "{79552CDA-8B44-4045-87E7-7B54781424E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timeline.Rulesets.Timeline", "Timeline.Rulesets.Timeline\Timeline.Rulesets.Timeline.csproj", "{79552CDA-8B44-4045-87E7-7B54781424E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
