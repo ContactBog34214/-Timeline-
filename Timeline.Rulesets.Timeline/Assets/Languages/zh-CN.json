@@ -1,0 +1,7 @@
+{
+    "Timeline.Rulesets.Timeline.Name":"Timeline",
+    "Timeline.Rulesets.Timeline.Description":"-Timeline-的主模式",
+    "Timeline.Rulesets.Timeline.DifficulySettings.HitWindow.Name":"判定区间",
+    "Timeline.Rulesets.Timeline.PerformancePoints.Aim.Name":"瞄准",
+    "Timeline.Rulesets.Timeline.PerformancePoints.Beat.Name":"节奏"
+}

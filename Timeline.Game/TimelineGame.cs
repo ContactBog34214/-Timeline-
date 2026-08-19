@@ -55,9 +55,9 @@ public partial class TimelineGame
             return;
         Running = this;
         GameStopwatch.Start();
+        //设置日志
         Directory.CreateDirectory(Path.Combine(GameDir, "Logs"));
         Directory.CreateDirectory(Path.Combine(GameDir, "Files"));
-        File = new(Path.Combine(GameDir, "Files"));
         Log.SetLogFile(
             Path.Combine(GameDir, "Logs", $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff}.log")
         );
@@ -66,23 +66,30 @@ public partial class TimelineGame
         else
             Log.SetMinLevel(LogLevel.Info);
 
+        //设置虚拟文件系统
+        File = new(Path.Combine(GameDir, "Files"));
+
+        //加载配置文件
         GameGraphicsCfg = await LoadConfigFile<GraphicsCfg>();
         GameStorageCfg = await LoadConfigFile<StorageCfg>();
         GameUserInterfaceCfg = await LoadConfigFile<UserInterfaceCfg>();
         GameDebugToolCfg = await LoadConfigFile<DebugToolCfg>();
 
-        File.AllowCache = GameStorageCfg.EnableCache;
-        File.CompressFile = GameStorageCfg.EnableCompress;
-        File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
+        //重载虚拟文件系统
+        File = new(Path.Combine(GameDir, "Files"))
+        {
+            AllowCache = GameStorageCfg.EnableCache,
+            CompressFile = GameStorageCfg.EnableCompress,
+            MaximumCacheSize = GameStorageCfg.MaximumCacheSize
+        };
 
-        GameGraphicsCfg.VSync = false;
-
+        //创建窗口
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
         {
             FullScreen = GameGraphicsCfg?.FullScreen ?? true,
             EnableMouseRelative = true,
             FramePerSecond = GameGraphicsCfg?.FPSLimit ?? 1000,
-            UpdatePerSecond = 2000,
+            UpdatePerSecond = 5000,
             RequestQuit = () =>
             {
                 if (Screen.Screen.FocusScreen?.AllowExit ?? true)
@@ -101,6 +108,7 @@ public partial class TimelineGame
                 Host.VSync = true;
         };
 
+        //加载资源文件
         var fontTask = LoadResourceGroupToGboal(
             "Fonts",
             ["ttf"],
@@ -311,7 +319,7 @@ public partial class TimelineGame
         void CreateIt()
         {
             cfg = new T();
-            File.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            File.CreateDirectory(Path.GetDirectoryName(filePath));
         }
         if (File.FileExists(filePath))
             try

@@ -132,7 +132,7 @@ public class SlideBar : UIWidget
         base.SetParent(value);
 
         var root = FindRoot(value as UIWidget) as UIScreen;
-        im = root?.window.Input;
+        im = root?.InputManager;
         im?.CursorDown += WhenCursorDown;
         im?.CursorMove += WhenDrag;
         im?.CursorUp += WhenCursorUp;

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Timeline.Game/Timeline.Game.csproj" />
+  </ItemGroup>
+
 </Project>
