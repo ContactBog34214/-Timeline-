@@ -171,8 +171,26 @@ public partial class TimelineGame
                             if (config != null) LoadedRuleset.RulesetConfigs = config;
                         }
                         ResourceManager RulesetRM = new();
+                        RulesetRM.AddType("StreamFile", new TStreamFile());
                         RulesetRM.AddType("Image", new TResourceSet(Host.Dev, Host.Renderer.TextureLayout));
+                        LoadedRuleset.RuleSetResources = RulesetRM;
+
+                        await LoadedRuleset.Load(token);
                         Rulesets.TryAdd(LoadedRuleset.TypeID, LoadedRuleset);
+                        foreach (var i in LoadedRuleset.Languages)
+                        {
+                            try
+                            {
+                                string str = i.Value.Text;
+                                if (Languages.TryGetValue(i.Key, out var l)) l.Add(str);
+                                else Languages.TryAdd(i.Key, [str]);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error($"Cannot load language:{ex}");
+                            }
+                        }
+                        Log.Info($"Ruleset:{LoadedRuleset.TypeID} loaded languages");
                     }
                     catch (Exception ex)
                     {
@@ -239,8 +257,12 @@ public partial class TimelineGame
             TouchMode = TouchModes.None,
         };
 
-        Log.Debug($"Loaded rulesets:{string.Join(',', Rulesets.OrderBy(c => c.Key).Select(c => c.Key))}");
-        Log.Debug("Loading intro screen");
+        Log.Info($"Loaded rulesets:{string.Join(
+                ',',
+                 Rulesets.OrderBy(c => c.Key)
+                 .Select(c => Localization.Get(c.Value.Name))
+                 )}");
+        Log.Info("Loading intro screen");
         Intro intro = new();
         await Screen.Screen.LoadScreenASync(intro);
     }
@@ -333,8 +355,11 @@ public partial class TimelineGame
                 }
                 try
                 {
+                    int ptr = 0;
                     foreach (var l in lang)
-                        Localization.SetLanguage(i, l);
+                    {
+                        Localization.SetLanguage($"{i}-{ptr++}", l);
+                    }
                     Log.Info($"Language {i} loaded");
                 }
                 catch (Exception ex)
@@ -427,6 +452,7 @@ public partial class TimelineGame
     }
     public async Task UpdateConfigFile<T>(T Config) where T : ConfigType
     {
+        if (Equals(Config.GetType(), typeof(ConfigType))) return;
         string typeName = Config.GetType().FullName;
         string filePath = Path.Combine("Config", $"{typeName}.json");
         if (!File.DirectoryExists("Config")) return;

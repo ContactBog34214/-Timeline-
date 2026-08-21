@@ -9,6 +9,7 @@ namespace Timeline.Game.Rulesets;
 
 public interface IRuleset : IName, IDescription
 {
+        Task Load(CancellationToken token);
         Task<IGameSession<IRuleset>> CreateGameSession(Map Beatmap, Chart Chart, CancellationToken cancellationToken);
         static HitLevel[] HitLevels { get; }
         ConfigType RulesetConfigs { get; set; }

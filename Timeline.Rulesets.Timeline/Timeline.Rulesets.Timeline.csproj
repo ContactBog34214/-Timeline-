@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../Timeline.Game/Timeline.Game.csproj" />
+    <EmbeddedResource Include="Assets\**\*" />
   </ItemGroup>
 
 </Project>

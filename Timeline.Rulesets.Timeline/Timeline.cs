@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Reflection;
+using Line.Framework;
 using Line.Framework.IO;
 using Line.Framework.Resource;
 using Timeline.Game.Beatmap;
@@ -22,6 +24,48 @@ public class Ruleset : IRuleset
             Lines = [.. f.Lines],
         };
         return default;
+    }
+
+    public async Task Load(CancellationToken token)
+    {
+        //语言
+        {
+            Languages.Clear();
+            var assembly = Assembly.GetExecutingAssembly();
+
+            var names = assembly.GetManifestResourceNames();
+            foreach (var name in names)
+        {
+            if (token.IsCancellationRequested)
+                break;
+            var sp = name.Split('.');
+            if (
+                sp.Length > 6
+                && sp[3] == "Assets"
+                && sp[4] == "Languages"
+                && sp.Last()=="json"
+            )
+            {
+                Stream tg = null;
+                try
+                {
+                    tg = assembly.GetManifestResourceStream(name);
+                    var res = await RuleSetResources.Create("StreamFile", name, tg);
+                    await res.Load();
+                    Languages.TryAdd(sp[5],res.GetHandle() as StreamFile);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Cannot load language {name}:{ex}");
+                }
+                finally
+                {
+                    if (tg != null)
+                        await tg.DisposeAsync();
+                }
+            }
+        }
+        }
     }
 
     public static HitLevel[] HitLevels { get; } =
