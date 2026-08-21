@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Text.Json.Serialization;
+using Line.Framework.Types;
 using Microsoft.VisualBasic;
 using Timeline.Game;
 using Timeline.Game.Maths;
@@ -9,10 +10,12 @@ namespace Timeline.Rulesets.Timeline.Objects;
 
 public class Line : IDuringTime
 {
+    public float LineID { get; set; } = 0;
     public double Time { get; set; }
+    public RgbaFloat Color { get; set; }
+    public double DuringTime { get; set; }
     [JsonIgnore]
-    public double DuringTime => Length / SpeedPerSecInPixels;
-    public double SpeedPerSecInPixels { get; set; } = 128;
+    public double SpeedPerSecInPixels => Length / DuringTime;
     public float Length { get; private set; } = 0;
     public ControlNode[] ControlNodes
     {
@@ -36,7 +39,7 @@ public class Line : IDuringTime
         if (ProgressCache.TryGetValue(Progress, out var v)) return v + Position;
         Vector2 ps = InterpolationTool.Linear(NodeCache, Progress);
         ProgressCache.TryAdd(Progress, ps);
-        return ps + Position;
+        return ps;
     }
     public void BuildCache()
     {
@@ -109,11 +112,12 @@ public class Line : IDuringTime
         newCache[^1] = ControlNodes.Last().Position.Last();
         float l = 0;
         for (int i = 0; i < newCache.Length - 1; i++)
-            l += Vector2.Distance(newCache[0], newCache[1]);
+            l += Vector2.Distance(newCache[i], newCache[i+1]);
         NodeCache = newCache;
         Length = l;
         ProgressCache.Clear();
     }
+    public int SimpleNum => NodeCache.Length;
     public static int GetSimpleNum(Vector2[] Nodes, float Multiple)
     {
         var Dis = 0f;

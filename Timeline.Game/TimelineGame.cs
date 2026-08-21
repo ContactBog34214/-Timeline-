@@ -12,6 +12,7 @@ using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
 using Timeline.Game.Config;
+using Timeline.Game.Maths;
 using Timeline.Game.ResourceTypes;
 using Timeline.Game.Screen;
 using Timeline.Game.Sprites;

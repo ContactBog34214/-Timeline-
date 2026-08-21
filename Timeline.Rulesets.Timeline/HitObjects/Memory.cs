@@ -16,4 +16,5 @@ public class Memory : IHitObject
     public double DuringTime => 0;
 
     public double Time { get; set; } = 0;
+    public double HitTime { get; set; } = 0;
 }

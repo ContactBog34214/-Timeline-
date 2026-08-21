@@ -164,4 +164,18 @@ public static class InterpolationTool
         if (Between(deltaMid, 0, candidate2)) return candidate2;
         return deltaEnd; // 回退
     }
+
+    public static float GetAngle(Vector2 Delta)
+    {
+        if (Equals(Delta, default)) return 0;
+        return (MathF.Atan2(Delta.Y, Delta.X) * (180f / MathF.PI) + 270) % 360;
+    }
+
+    public static Vector2 Rotate(Vector2 Delta, float angle)
+    {
+        float t = angle * MathF.PI / 180f;
+        float cos = MathF.Cos(t);
+        float sin = MathF.Sin(t);
+        return new(Delta.X * cos - Delta.Y * sin, Delta.Y * cos + Delta.X * sin);
+    }
 }

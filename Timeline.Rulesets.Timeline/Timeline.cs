@@ -9,7 +9,20 @@ namespace Timeline.Rulesets.Timeline;
 
 public class Timeline(ResourceManager rm) : IRuleset
 {
-    public async Task<IGameSession> CreateGameSession(IBeatmap bm, IChart c, CancellationToken token) { return default; }
+    public async Task<IGameSession<IRuleset>> CreateGameSession(Map bm, Game.Beatmap.Chart c, CancellationToken token)
+    {
+        if(!(c is Chart f))throw new InvalidDataException($"{TypeID} cannot load the map.");
+        var s = new GameSession
+        {
+            Ruleset = this,
+            TimeSets = [.. c.TimeSets],
+            DifficultySettings = c.DifficultySettings,
+            HitObjects = [.. c.HitObjects],
+            Lines = [..f.Lines],
+        };
+        return default;
+    }
+
     public static HitLevel[] HitLevels { get; } =
     {
         new()
@@ -60,4 +73,9 @@ public class Timeline(ResourceManager rm) : IRuleset
             MultiInput=true,
         },
     ];
+
+    public RulesetPermission[] UsingPermissions { get; } = [
+        RulesetPermission.Cursor,
+        RulesetPermission.Touch
+        ];
 }

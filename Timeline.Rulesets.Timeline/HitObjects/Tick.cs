@@ -15,4 +15,5 @@ public class Tick : IHitObject
 
     public double Time { get; set; } = 0;
     public HitLevel HitResult { get; set; } = default;
+    public double HitTime { get; set; } = 0;
 }
