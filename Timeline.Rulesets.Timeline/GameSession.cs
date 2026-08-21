@@ -1,13 +1,16 @@
 using System.Collections.Concurrent;
+using Line.Framework.IO;
+using Timeline.Game.Beatmap;
+using Timeline.Game.Gaming;
 using Timeline.Game.Rulesets;
-using Timeline.Game.Screen.Gaming;
 using Timeline.Rulesets.Timeline.DifficulySettings;
 using Timeline.Rulesets.Timeline.HitObjects;
 
 namespace Timeline.Rulesets.Timeline;
 
-public class GameSession : IGameSession, IHasVisualHitWindow
+public class GameSession : IGameSession<Timeline>, IHasVisualHitWindow
 {
+    public Objects.Line[] Lines { get; set; } = [];
     public GamingScreen? ActiveGamingScreen { get; set; }
     public IHitObject[] HitObjects { get; set; } = [];
     public VisualHitWindow[] HitWindows { get; private set; } = [];
@@ -89,7 +92,11 @@ public class GameSession : IGameSession, IHasVisualHitWindow
     }
     public double Time { get; set; } = 0;
 
-    public void CreateGamingScreen()
+    public required Timeline Ruleset { get; init; }
+
+    public required TimeSet[] TimeSets { get; set; }
+
+    public void CreateGamingClient(InputManager im)
     {
         throw new NotImplementedException();
     }

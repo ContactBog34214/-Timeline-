@@ -2,9 +2,9 @@ using System.Numerics;
 using Line.Framework.Default.UIWidgets;
 using Line.Framework.Types;
 
-namespace Timeline.Game.Screen.Gaming;
+namespace Timeline.Game.Gaming;
 
-public abstract partial class GamingScreen : Screen
+public abstract partial class GamingScreen : Screen.Screen
 {
     public UIBox GamingFieldSurface { get; }
     public UIBox BackgroundSurface { get; }
