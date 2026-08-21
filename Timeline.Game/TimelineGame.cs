@@ -14,6 +14,8 @@ using Line.Framework.UI;
 using Timeline.Game.Config;
 using Timeline.Game.Maths;
 using Timeline.Game.ResourceTypes;
+using Timeline.Game.ResourceTypes.Assemblies;
+using Timeline.Game.Rulesets;
 using Timeline.Game.Screen;
 using Timeline.Game.Sprites;
 
@@ -100,6 +102,7 @@ public partial class TimelineGame
         };
         Log.Debug($"[{GetType().Name}] Window created");
         Host.Resource.AddType("StreamFile", new TStreamFile());
+        Host.Resource.AddType("Assemblies", new TAssembly());
 
         Host.OnUpdate += (_) =>
         {
@@ -138,7 +141,45 @@ public partial class TimelineGame
                     await obj?.Load();
                     var t = (obj.GetHandle() as StreamFile)?.Text ?? "";
                     var name = id.Split('.')[4];
-                    Languages.TryAdd(name, t);
+                    if (!Languages.TryGetValue(name, out var l))
+                        Languages.TryAdd(name, [t]);
+                    else l.Add(t);
+                }
+            )
+        );
+
+        Rulesets.Clear();
+        var rsTask = LoadResourceGroupToGboal(
+            "Rulesets",
+            ["dll"],
+            "Assemblies",
+            new(
+                async (id, obj, token) =>
+                {
+                    if (!(obj is RAssembly))
+                        return;
+                    await obj?.Load();
+                    try
+                    {
+                        var assembly = obj?.GetHandle() as Assembly;
+                        var LoadedRuleset = assembly.CreateInstance($"{assembly.GetName().Name}.Ruleset") as IRuleset;
+
+                        var t = assembly.GetType($"{assembly.GetName().Name}.Config");
+                        if (t.IsClass && t.IsPublic && t.IsAssignableTo(typeof(ConfigType)))
+                        {
+                            var config = await LoadConfigFileWithType(t);
+                            if (config != null) LoadedRuleset.RulesetConfigs = config;
+                        }
+                        ResourceManager RulesetRM = new();
+                        RulesetRM.AddType("Image", new TResourceSet(Host.Dev, Host.Renderer.TextureLayout));
+                        Rulesets.TryAdd(LoadedRuleset.TypeID, LoadedRuleset);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Cannot load ruleset:{id}. {ex}");
+                        await obj?.Release();
+                        obj?.Dispose();
+                    }
                 }
             )
         );
@@ -184,6 +225,7 @@ public partial class TimelineGame
         await fontTask;
         await imgTask;
         await langTask;
+        await rsTask;
         ReloadLanguage();
 
         GameCursor = new()
@@ -197,8 +239,9 @@ public partial class TimelineGame
             TouchMode = TouchModes.None,
         };
 
+        Log.Debug($"Loaded rulesets:{string.Join(',', Rulesets.OrderBy(c => c.Key).Select(c => c.Key))}");
         Log.Debug("Loading intro screen");
-        Screen.Intro intro = new();
+        Intro intro = new();
         await Screen.Screen.LoadScreenASync(intro);
     }
 
@@ -273,7 +316,7 @@ public partial class TimelineGame
     /// </summary>
     public FileManager File { get; private set; }
     public Localization Localization { get; } = new();
-    internal ConcurrentDictionary<string, string> Languages { get; } = new();
+    internal ConcurrentDictionary<string, ConcurrentBag<string>> Languages { get; } = new();
     private readonly object _reloadLanguageLock = new();
 
     internal void ReloadLanguage()
@@ -290,7 +333,8 @@ public partial class TimelineGame
                 }
                 try
                 {
-                    Localization.SetLanguage(i, lang);
+                    foreach (var l in lang)
+                        Localization.SetLanguage(i, l);
                     Log.Info($"Language {i} loaded");
                 }
                 catch (Exception ex)
@@ -310,11 +354,30 @@ public partial class TimelineGame
     internal DebugToolCfg GameDebugToolCfg { get; set; }
     internal UserInterfaceCfg GameUserInterfaceCfg { get; set; }
     internal StorageCfg GameStorageCfg { get; set; }
+    public async Task<ConfigType> LoadConfigFileWithType(Type T)
+    {
+        if (T.IsClass && T.IsPublic && T.IsAssignableTo(typeof(ConfigType)))
+        {
+            MethodInfo method = typeof(TimelineGame).GetMethod(nameof(LoadConfigFile));
+            if (method == null) return null;
 
+            MethodInfo genericMethod = method.MakeGenericMethod(T);
+
+            var task = (Task)genericMethod.Invoke(this, null);
+            await task;
+
+            var resultProperty = task.GetType().GetProperty("Result");
+            if (resultProperty == null) return null;
+
+            var config = resultProperty.GetValue(task) as ConfigType;
+            return config;
+        }
+        return null;
+    }
     public async Task<T> LoadConfigFile<T>()
         where T : ConfigType, new()
     {
-        string typeName = typeof(T).Name;
+        string typeName = typeof(T).FullName;
         string filePath = Path.Combine("Config", $"{typeName}.json");
         T cfg;
         void CreateIt()
@@ -348,9 +411,30 @@ public partial class TimelineGame
         Log.Debug($"Config {typeName} loaded");
         return cfg;
     }
+    public async Task UpdateConfigFileWithType(ConfigType Config)
+    {
+        var t = Config.GetType();
+        if (t.IsClass && t.IsPublic && t.IsAssignableTo(typeof(ConfigType)))
+        {
+            MethodInfo method = typeof(TimelineGame).GetMethod(nameof(UpdateConfigFile));
+            if (method == null) return;
 
+            MethodInfo genericMethod = method.MakeGenericMethod(t);
+
+            var task = (Task)genericMethod.Invoke(this, [Config]);
+            await task;
+        }
+    }
+    public async Task UpdateConfigFile<T>(T Config) where T : ConfigType
+    {
+        string typeName = Config.GetType().FullName;
+        string filePath = Path.Combine("Config", $"{typeName}.json");
+        if (!File.DirectoryExists("Config")) return;
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(Config));
+    }
     /// <summary>
     /// 会话
     /// </summary>
     public static TimelineGame Running { get; private set; }
+    public static ConcurrentDictionary<string, IRuleset> Rulesets { get; } = new();
 }
