@@ -12,9 +12,9 @@ using Timeline.Rulesets.Timeline.HitObjects;
 
 namespace Timeline.Rulesets.Timeline.Surfaces;
 
-public class HitObjectSurface(Timeline rs, GameSession gs) : UIWidget
+public class HitObjectSurface(Ruleset rs, GameSession gs) : UIWidget
 {
-    private readonly Timeline Ruleset = rs;
+    private readonly Ruleset Ruleset = rs;
     private readonly GameSession GameSession = gs;
     public override async Task RendererContext(RendererContextArgs args)
     {
@@ -34,14 +34,14 @@ public class HitObjectSurface(Timeline rs, GameSession gs) : UIWidget
         //筛选显示控件
         var lines = GameSession.Lines
             .Where(c => Earliest <= c.Time &&
-            c.Time + c.DuringTime <= GameSession.Time + FadeInSec * 3 + (Ruleset.RulesetConfigs as RulesetConfig)?.HitAnimationMsLength)
+            c.Time + c.DuringTime <= GameSession.Time + FadeInSec * 3 + (Ruleset.RulesetConfigs as Config)?.HitAnimationMsLength)
             .OrderBy(c => -c.Time);
         var hitObj = GameSession.HitObjects
             .Where(
                 c => Earliest <= c.Time &&
                 (
                     Equals(c.HitResult, default) ||
-                    c.HitTime + (Ruleset.RulesetConfigs as RulesetConfig)?.HitAnimationMsLength >= GameSession.Time
+                    c.HitTime + (Ruleset.RulesetConfigs as Config)?.HitAnimationMsLength >= GameSession.Time
                 )
             );
 
