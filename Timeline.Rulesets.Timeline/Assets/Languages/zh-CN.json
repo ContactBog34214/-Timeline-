@@ -1,5 +1,5 @@
 {
-  "Timeline.Rulesets.Timeline.Name": "Timeline",
+  "Timeline.Rulesets.Timeline.Name": "-Timeline-",
   "Timeline.Rulesets.Timeline.Description": "-Timeline-的主模式",
   "Timeline.Rulesets.Timeline.DifficulySettings.HitWindow.Name": "判定区间",
   "Timeline.Rulesets.Timeline.DifficulySettings.Distance.Name": "视距",
@@ -9,5 +9,5 @@
   "Timeline.Rulesets.Timeline.HitObjects.Tick.Name": "Tick",
   "Timeline.Rulesets.Timeline.HitObjects.Delay.Name": "Delay",
   "Timeline.Rulesets.Timeline.HitObjects.Memory.Name": "Memory",
-  "Timeline.Rulesets.Timeline.Objects.Line": "轴"
+  "Timeline.Rulesets.Timeline.Objects.Line.Name": "轴"
 }

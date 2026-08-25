@@ -1,26 +1,71 @@
 using System.Collections.Concurrent;
+using System.Reflection;
+using Line.Framework;
 using Line.Framework.IO;
 using Line.Framework.Resource;
 using Timeline.Game.Beatmap;
+using Timeline.Game.Config;
 using Timeline.Game.ResourceTypes;
 using Timeline.Game.Rulesets;
 
 namespace Timeline.Rulesets.Timeline;
 
-public class Timeline(ResourceManager rm) : IRuleset
+public class Ruleset : IRuleset
 {
     public async Task<IGameSession<IRuleset>> CreateGameSession(Map bm, Game.Beatmap.Chart c, CancellationToken token)
     {
-        if(!(c is Chart f))throw new InvalidDataException($"{TypeID} cannot load the map.");
+        if (!(c is Chart f)) throw new InvalidDataException($"{TypeID} cannot load the map.");
         var s = new GameSession
         {
             Ruleset = this,
             TimeSets = [.. c.TimeSets],
             DifficultySettings = c.DifficultySettings,
             HitObjects = [.. c.HitObjects],
-            Lines = [..f.Lines],
+            Lines = [.. f.Lines],
         };
         return default;
+    }
+
+    public async Task Load(CancellationToken token)
+    {
+        //语言
+        {
+            Languages.Clear();
+            var assembly = Assembly.GetExecutingAssembly();
+
+            var names = assembly.GetManifestResourceNames();
+            foreach (var name in names)
+        {
+            if (token.IsCancellationRequested)
+                break;
+            var sp = name.Split('.');
+            if (
+                sp.Length > 6
+                && sp[3] == "Assets"
+                && sp[4] == "Languages"
+                && sp.Last()=="json"
+            )
+            {
+                Stream tg = null;
+                try
+                {
+                    tg = assembly.GetManifestResourceStream(name);
+                    var res = await RuleSetResources.Create("StreamFile", name, tg);
+                    await res.Load();
+                    Languages.TryAdd(sp[5],res.GetHandle() as StreamFile);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Cannot load language {name}:{ex}");
+                }
+                finally
+                {
+                    if (tg != null)
+                        await tg.DisposeAsync();
+                }
+            }
+        }
+        }
     }
 
     public static HitLevel[] HitLevels { get; } =
@@ -51,12 +96,12 @@ public class Timeline(ResourceManager rm) : IRuleset
             Accuracy=0m,
         }
     };
-    public IRulesetConfigs RulesetConfigs { get; } = new RulesetConfig();
+    public ConfigType RulesetConfigs { get; set; } = new Config();
     public string TypeID { get; } = "Timeline.Rulesets.Timeline";
     public string Name { get; } = "Timeline.Rulesets.Timeline.Name";
     public string Description { get; } = "Timeline.Rulesets.Timeline.Description";
     public ConcurrentDictionary<string, StreamFile> Languages { get; } = new();
-    public ResourceManager RuleSetResources { get; } = rm;
+    public ResourceManager RuleSetResources { get; set; }
 
     public KeybindItem[] KeybindItems { get; } = [
         new(){

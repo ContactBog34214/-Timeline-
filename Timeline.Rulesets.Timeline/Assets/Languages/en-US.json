@@ -1,0 +1,13 @@
+{
+  "Timeline.Rulesets.Timeline.Name": "-Timeline-",
+  "Timeline.Rulesets.Timeline.Description": "The main mode of -Timeline-",
+  "Timeline.Rulesets.Timeline.DifficulySettings.HitWindow.Name": "HitWindow",
+  "Timeline.Rulesets.Timeline.DifficulySettings.Distance.Name": "Distance",
+  "Timeline.Rulesets.Timeline.DifficulySettings.ObjectSize.Name": "ObjectSize",
+  "Timeline.Rulesets.Timeline.PerformancePoints.Aim.Name": "Aim",
+  "Timeline.Rulesets.Timeline.PerformancePoints.Beat.Name": "Beat",
+  "Timeline.Rulesets.Timeline.HitObjects.Tick.Name": "Tick",
+  "Timeline.Rulesets.Timeline.HitObjects.Delay.Name": "Delay",
+  "Timeline.Rulesets.Timeline.HitObjects.Memory.Name": "Memory",
+  "Timeline.Rulesets.Timeline.Objects.Line.Name": "Line"
+}

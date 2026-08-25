@@ -8,7 +8,7 @@ using Timeline.Rulesets.Timeline.HitObjects;
 
 namespace Timeline.Rulesets.Timeline;
 
-public class GameSession : IGameSession<Timeline>, IHasVisualHitWindow
+public class GameSession : IGameSession<Ruleset>, IHasVisualHitWindow
 {
     public Objects.Line[] Lines { get; set; } = [];
     public GamingScreen? ActiveGamingScreen { get; set; }
@@ -38,7 +38,7 @@ public class GameSession : IGameSession<Timeline>, IHasVisualHitWindow
                 HitwindowSetting.MinixmumValue,
                 HitwindowSetting.MaximumValue
                 );
-            var Table = Timeline.HitLevels;
+            var Table = Ruleset.HitLevels;
             double GetValAbs(double Source, double Scale) =>
                 Math.Abs(Math.Max(0, Source - Scale * (double)final));
 
@@ -92,7 +92,7 @@ public class GameSession : IGameSession<Timeline>, IHasVisualHitWindow
     }
     public double Time { get; set; } = 0;
 
-    public required Timeline Ruleset { get; init; }
+    public required Ruleset Ruleset { get; init; }
 
     public required TimeSet[] TimeSets { get; set; }
 
@@ -108,7 +108,7 @@ public class GameSession : IGameSession<Timeline>, IHasVisualHitWindow
 
     public decimal GetAccuracy(GetMode Mode)
     {
-        var Lvs = Timeline.HitLevels;
+        var Lvs = Ruleset.HitLevels;
         ConcurrentDictionary<HitLevel, IEnumerable<IHitObject>> Levels = new();
         IEnumerable<IHitObject>? Def = default;
         HitLevel DefHitLevel = new() { Accuracy = 0 };

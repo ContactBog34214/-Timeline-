@@ -2,3 +2,4 @@
 */obj
 /.vscode
 *.lscache
+/Timeline.Game/Assets/Rulesets/*.dll
