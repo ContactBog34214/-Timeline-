@@ -52,7 +52,7 @@ public partial class TimelineGame
 
     public Stopwatch GameStopwatch { get; } = new();
 
-    internal async Task Game(string[] args)
+    public async Task Game(string[] args)
     {
         if (Running != null)
             return;
@@ -265,11 +265,10 @@ public partial class TimelineGame
         Log.Info("Loading intro screen");
         Intro intro = new();
         await Screen.Screen.LoadScreenASync(intro);
-    }
-
-    public TimelineGame(string[] args)
-    {
-        Task.Run(() => Game(args)).ConfigureAwait(false).GetAwaiter().GetResult();
+        while (Host.Exists)
+        {
+            await Task.Delay(10);
+        }
     }
 
     async Task LoadResourceGroupToGboal(
