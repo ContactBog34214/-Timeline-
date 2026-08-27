@@ -11,4 +11,9 @@
     <ProjectReference Include="../Timeline.Game/Timeline.Game.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Line.Framework" Version="2026.116.1" />
+    <PackageReference Include="Line.Framework.Default" Version="2026.116.1" />
+  </ItemGroup>
+
 </Project>
