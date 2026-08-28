@@ -12,7 +12,6 @@ using Line.Framework.Resource.Graphic;
 using Line.Framework.Types;
 using Line.Framework.UI;
 using Timeline.Game.Config;
-using Timeline.Game.Maths;
 using Timeline.Game.ResourceTypes;
 using Timeline.Game.ResourceTypes.Assemblies;
 using Timeline.Game.Rulesets;
@@ -24,15 +23,25 @@ namespace Timeline.Game;
 public partial class TimelineGame
 {
 #if DEBUG
-    public string GameName { get; } = "-Timeline Dev-";
+    public string GameName { get; } = "Timeline.Dev";
 #else
-    public string GameName { get; } = "-Timeline-";
+    public string GameName { get; } = "Timeline";
 #endif
-    public string GameDir { get; } =
-        Path.Combine(
+    public TimelineGame()
+    {
+        GameDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Timeline"
+            GameName
         );
+    }
+    public string GameDir { get; }
+    public string GameFriendlyName
+    {
+        get; internal set
+        {
+            Host?.Title = field = value;
+        }
+    } = "-Timeline-";
     public string VersionTag { get; } = "Origin";
     public string Version
     {
@@ -79,12 +88,9 @@ public partial class TimelineGame
         GameDebugToolCfg = await LoadConfigFile<DebugToolCfg>();
 
         //重载虚拟文件系统
-        File = new(Path.Combine(GameDir, "Files"))
-        {
-            AllowCache = GameStorageCfg.EnableCache,
-            CompressFile = GameStorageCfg.EnableCompress,
-            MaximumCacheSize = GameStorageCfg.MaximumCacheSize
-        };
+        File.AllowCache = GameStorageCfg.EnableCache;
+        File.CompressFile = GameStorageCfg.EnableCompress;
+        File.MaximumCacheSize = GameStorageCfg.MaximumCacheSize;
 
         //创建窗口
         @Host = new(Backend: GameGraphicsCfg?.GraphicBackend ?? GraphicBackend.Vulkan)
@@ -93,10 +99,12 @@ public partial class TimelineGame
             EnableMouseRelative = true,
             FramePerSecond = GameGraphicsCfg?.FPSLimit ?? 1000,
             UpdatePerSecond = 5000,
-            RequestQuit = () =>
+            RequestQuit = async () =>
             {
                 if (Screen.Screen.FocusScreen?.AllowExit ?? true)
-                    Task.Run(() => @Host.Dispose());
+                {
+                    await @Host.DisposeAsync();
+                }
             },
             VSync = GameGraphicsCfg?.VSync ?? false,
         };
@@ -106,10 +114,9 @@ public partial class TimelineGame
 
         Host.OnUpdate += (_) =>
         {
-            if (Host.VSync != (GameGraphicsCfg?.VSync ?? false))
-                Host.VSync = GameGraphicsCfg?.VSync ?? false;
-            if (!Host.IsFocus && !Host.VSync && GameGraphicsCfg.LimitFPSOnMinixmum)
-                Host.VSync = true;
+            bool vs = (GameGraphicsCfg?.VSync ?? false) || ((GameGraphicsCfg?.LimitFPSOnMinixmum ?? true) && !Host.IsFocus);
+            if (vs != Host.VSync)
+                Host.VSync = vs;
         };
 
         //加载资源文件
@@ -269,6 +276,8 @@ public partial class TimelineGame
         {
             await Task.Delay(10);
         }
+        await Entry.Cancel();
+        File.Dispose();
     }
 
     async Task LoadResourceGroupToGboal(
@@ -366,6 +375,9 @@ public partial class TimelineGame
                     Log.Error($"Reload {i} language error:{ex}");
                 }
             }
+            if (GameName == "Timeline")
+                GameFriendlyName = Localization.Get("Timeline.Game.Name", [VersionTag]);
+            else GameFriendlyName = Localization.Get("Timeline.Game.DevName", [VersionTag]);
         }
     }
 

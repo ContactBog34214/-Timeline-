@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Line.Framework" Version="2026.116.1" />
-    <PackageReference Include="Line.Framework.Default" Version="2026.116.1" />
+    <PackageReference Include="Line.Framework" Version="2026.116.4" />
+    <PackageReference Include="Line.Framework.Default" Version="2026.116.4" />
   </ItemGroup>
 
 </Project>
