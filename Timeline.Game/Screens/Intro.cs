@@ -8,7 +8,7 @@ namespace Timeline.Game.Screen;
 
 public partial class Intro : Screen
 {
-    public override bool AllowExit => false;
+    public override bool AllowExit => true;
     public override bool HideCursor => false;
     public override bool Overlays => false;
     public readonly Stopwatch Base=new();

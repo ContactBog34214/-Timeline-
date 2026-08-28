@@ -1,5 +1,7 @@
 {
-  "Timeline.Game.Intro.Title": "Welcome To -Timeline-{0}",
+  "Timeline.Game.Intro.Title": "Welcome To -Timeline- {0}",
   "Timeline.Game.DebugSurface.Ms": "{0}ms",
-  "Timeline.Game.DebugSurface.Fps": "{0}fps"
+  "Timeline.Game.DebugSurface.Fps": "{0}fps",
+  "Timeline.Game.Name": "-Timeline- {0}",
+  "Timeline.Game.DevName": "-Timeline Dev- {0}"
 }
